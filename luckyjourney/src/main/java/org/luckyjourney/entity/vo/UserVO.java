@@ -19,4 +19,6 @@ public class UserVO{
     private Long follow;
 
     private Long fans;
+    
+    private Boolean each;
 }

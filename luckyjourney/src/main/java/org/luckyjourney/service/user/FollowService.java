@@ -1,14 +1,13 @@
 package org.luckyjourney.service.user;
 
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.luckyjourney.entity.user.Follow;
 import org.luckyjourney.entity.vo.BasePage;
-import org.luckyjourney.entity.vo.FollowVO;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 
 public interface FollowService extends IService<Follow> {
@@ -57,4 +56,6 @@ public interface FollowService extends IService<Follow> {
      * @return
      */
     Boolean isFollows(Long followId,Long userId);
+    
+    Set<Long> isFollowsAll(Set<Long> userIds, Long userId);
 }

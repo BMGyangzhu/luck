@@ -10,6 +10,7 @@ public class LocalCache {
     private static Map<String,Object> cache = new ConcurrentHashMap();
     static {
         cache.put( "http://localhost:5378/",true);
+        cache.put("http://localhost:3000/", true);
     }
 
     public static void put(String key,Object val){

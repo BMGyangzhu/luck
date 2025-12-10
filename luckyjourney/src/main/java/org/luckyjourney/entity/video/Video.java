@@ -60,6 +60,8 @@ public class Video extends BaseEntity {
 
     // 收藏次数
     private Long favoritesCount;
+    
+    private Long commentCount;
 
     // 视频时长
     private String duration;

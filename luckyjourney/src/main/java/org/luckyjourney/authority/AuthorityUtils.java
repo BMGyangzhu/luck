@@ -1,13 +1,25 @@
 package org.luckyjourney.authority;
 
+import org.luckyjourney.service.user.PermissionService;
+import org.luckyjourney.service.user.impl.PermissionServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 import java.util.*;
 
 
+
+@Component
 public class AuthorityUtils {
 
+    private static PermissionService permissionService;
 
+    @Autowired
+    public void setPermissionService(PermissionService permissionService) {
+        AuthorityUtils.permissionService = permissionService; // 注入静态字段
+    }
+    
     // key: userId : 用户拥有的权限 
     private static Map<Long, Collection<String>> map = new HashMap<>();
 
@@ -18,8 +30,29 @@ public class AuthorityUtils {
 
     // 校验权限
     public static Boolean verify(Long userId, String authority) {
+        // 检查 userId
+        if (userId == null) {
+            throw new NullPointerException("userId 是 null");
+        }
 
-        return map.get(userId).contains(authority);
+        // 检查 authority
+        if (authority == null) {
+            throw new NullPointerException("authority 是 null");
+        }
+
+        // 检查 map.get(userId) 是否返回 null
+        Collection<String> permissions = map.get(userId);
+        if (permissions == null) {
+            permissionService.initMenu(userId);
+//            throw new NullPointerException("map.get(" + userId + ") 返回 null（用户无权限配置）");
+        }
+        
+        if (permissions == null){
+            throw new NullPointerException("map.get(" + userId + ") 返回 null（用户无权限配置）");
+        }
+
+        // 如果走到这里，说明没问题，正常检查权限
+        return permissions.contains(authority);
     }
 
     // 判空

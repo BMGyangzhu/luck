@@ -1,13 +1,10 @@
 package org.luckyjourney.service.user.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.lettuce.core.support.caching.RedisCache;
 import org.luckyjourney.constant.RedisConstant;
 import org.luckyjourney.entity.user.Follow;
+import org.luckyjourney.entity.user.User;
 import org.luckyjourney.entity.vo.BasePage;
-import org.luckyjourney.entity.vo.FollowVO;
 import org.luckyjourney.exception.BaseException;
 import org.luckyjourney.mapper.FollowMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -20,10 +17,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import javax.annotation.security.DenyAll;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -139,5 +134,27 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
     public Boolean isFollows(Long followId, Long userId) {
         if (userId == null || followId == null) return false;
         return count(new LambdaQueryWrapper<Follow>().eq(Follow::getFollowId,followId).eq(Follow::getUserId,userId)) == 1;
+    }
+
+    @Override
+    public Set<Long> isFollowsAll(Set<Long> userIds, Long userId) {
+        if (userId == null || userIds == null || userIds.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        // 构建查询条件：查询 userId 关注了 userIds 中的哪些用户
+        LambdaQueryWrapper<Follow> queryWrapper = new LambdaQueryWrapper<Follow>();
+        queryWrapper
+                .eq(Follow::getFollowId, userId)           // 关注者 = 当前用户
+                .in(Follow::getFollowId, userIds)         // 被关注者 在 userIds 列表中
+                .select(Follow::getFollowId);              // 只查询被关注者ID
+
+        // 执行查询
+        List<Follow> follows = list(queryWrapper);
+
+        // 提取被关注的用户ID列表
+        return follows.stream()
+                      .map(Follow::getFollowId)
+                      .collect(Collectors.toSet());
     }
 }

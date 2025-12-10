@@ -3,13 +3,10 @@ package org.luckyjourney.service.user.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.luckyjourney.config.QiNiuConfig;
 import org.luckyjourney.constant.AuditStatus;
 import org.luckyjourney.constant.RedisConstant;
-import org.luckyjourney.entity.File;
 import org.luckyjourney.entity.response.AuditResponse;
 import org.luckyjourney.entity.user.Favorites;
-import org.luckyjourney.entity.user.Follow;
 import org.luckyjourney.entity.user.User;
 import org.luckyjourney.entity.user.UserSubscribe;
 import org.luckyjourney.entity.video.Type;
@@ -30,10 +27,6 @@ import org.luckyjourney.service.video.TypeService;
 import org.luckyjourney.util.RedisCacheUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.data.redis.connection.RedisConnection;
-import org.springframework.data.redis.core.RedisCallback;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -75,6 +68,46 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Autowired
     private ImageAuditService imageAuditService;
+    @Override
+    public Map<Long, Long> getAvatarMap(Set<Long> userIds) {
+
+        if (ObjectUtils.isEmpty(userIds)) {
+            return Collections.emptyMap();
+        }
+
+        List<User> users = list(
+                new LambdaQueryWrapper<User>()
+                        .in(User::getId, userIds)
+                        .select(User::getId, User::getAvatar)
+        );
+
+        return users.stream()
+                    .collect(Collectors.toMap(User::getId, User::getAvatar));
+    }
+    
+
+    @Override
+    public Map<Long, User> getBaseInfoMap(Collection<Long> userIds) {
+
+        if (ObjectUtils.isEmpty(userIds)) {
+            return Collections.emptyMap();
+        }
+
+        List<User> users = list(
+                new LambdaQueryWrapper<User>()
+                        .in(User::getId, userIds)
+                        .select(
+                                User::getId,
+                                User::getNickName,
+                                User::getAvatar,
+                                User::getSex,
+                                User::getDescription
+                        )
+        );
+
+        return users.stream()
+                    .collect(Collectors.toMap(User::getId, Function.identity()));
+    }
 
     @Override
     public boolean register(RegisterVO registerVO) throws Exception {

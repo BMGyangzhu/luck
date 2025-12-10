@@ -107,8 +107,6 @@ public class VideoServiceImpl extends ServiceImpl<VideoMapper, Video> implements
         if (video.getOpen()) return new Video();
         setUserVoAndUrl(Collections.singleton(video));
         // 当前视频用户自己是否有收藏/点赞过等信息
-        // 这里需要优化 如果这里开线程获取则系统g了(因为这里的场景不适合) -> 请求数很多
-        // 正确做法: 视频存储在redis中，点赞收藏等行为异步放入DB, 定时任务扫描DB中不重要更新redis
         video.setStart(videoStarService.starState(videoId, userId));
         video.setFavorites(favoritesService.favoritesState(videoId, userId));
         video.setFollow(followService.isFollows(video.getUserId(), userId));
@@ -336,7 +334,7 @@ public class VideoServiceImpl extends ServiceImpl<VideoMapper, Video> implements
 
         return result;
     }
-
+    
     @Override
     public boolean favoritesVideo(Long fId, Long vId) {
         final Video video = getById(vId);
@@ -611,13 +609,23 @@ public class VideoServiceImpl extends ServiceImpl<VideoMapper, Video> implements
             }
             final Map<Long, File> fileMap = fileService.listByIds(fileIds).stream().collect(Collectors.toMap(File::getId, Function.identity()));
             final Map<Long, User> userMap = userService.list(userIds).stream().collect(Collectors.toMap(User::getId, Function.identity()));
+
+            Set<Long> followsAll = followService.isFollowsAll(userIds, UserHolder.get());
             for (Video video : videos) {
                 final UserVO userVO = new UserVO();
                 final User user = userMap.get(video.getUserId());
+
+                // 设置用户基本信息
                 userVO.setId(video.getUserId());
                 userVO.setNickName(user.getNickName());
                 userVO.setDescription(user.getDescription());
                 userVO.setSex(user.getSex());
+                userVO.setAvatar(user.getAvatar());
+
+                // 判断是否关注该用户
+                boolean isFollowed = followsAll.contains(video.getUserId());
+                userVO.setEach(isFollowed);  // 或者使用更明确的 setFollowed
+
                 video.setUser(userVO);
                 final File file = fileMap.get(video.getUrl());
                 video.setVideoType(file.getFormat());

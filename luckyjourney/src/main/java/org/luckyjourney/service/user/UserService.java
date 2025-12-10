@@ -8,10 +8,15 @@ import org.luckyjourney.entity.vo.*;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
 public interface UserService extends IService<User> {
+
+    Map<Long, Long> getAvatarMap(Set<Long> userIds);
+
+    Map<Long, User> getBaseInfoMap(Collection<Long> userIds);
 
     /**
      * 注册

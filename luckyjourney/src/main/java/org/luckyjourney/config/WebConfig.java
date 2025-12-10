@@ -27,10 +27,10 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
 
-        String[] url = {"http://101.35.228.84:8882","http://101.35.228.84:5378","http://127.0.0.1:5378","http://localhost:5378","http://localhost:5379","http://localhost:5173"};
+        String[] url = {"http://101.35.228.84:8882","http://101.35.228.84:5378","http://127.0.0.1:5378","http://localhost:5378","http://localhost:5379","http://localhost:5173", "http://localhost:3000"};
 
         registry.addMapping("/**")
-                .allowedOrigins(url)
+                .allowedOriginPatterns("*")
                 .allowCredentials(true)
                 .allowedMethods("*")   // 允许跨域的方法，可以单独配置
                 .allowedHeaders("*");  // 允许跨域的请求头，可以单独配置;

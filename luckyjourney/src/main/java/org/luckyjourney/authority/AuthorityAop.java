@@ -54,6 +54,7 @@ public class AuthorityAop {
 //        Long userId = JwtUtils.getMemberIdByJwtToken(request);
         Long userId = JwtUtils.getUserId(request);
         // 根据权限类，来校验
+        
         for (String s : authority.value()) {
             if (!AuthorityUtils.verify(userId,s)) {
                 return R.error().code(403).message("权限不足");

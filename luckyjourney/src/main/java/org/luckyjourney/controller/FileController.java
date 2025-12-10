@@ -49,12 +49,12 @@ public class FileController implements InitializingBean {
     @GetMapping("/{fileId}")
     public void getUUid(HttpServletRequest request, HttpServletResponse response, @PathVariable  Long fileId) throws IOException {
 
-       String ip = request.getHeader("referer");
-        System.out.println("LocalCache all keys: " + LocalCache.getAllKeys());
-        if (!LocalCache.containsKey(ip)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
+//       String ip = request.getHeader("referer");
+//        System.out.println("LocalCache all keys: " + LocalCache.getAllKeys());
+//        if (!LocalCache.containsKey(ip)) {
+//            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+//            return;
+//        }
 //         如果不是指定ip调用的该接口，则不返回
         // 生成uuid
         File url = fileService.getFileTrustUrl(fileId);
